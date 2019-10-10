@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading;
 using ANSH.DataBase.Connection;
 using ANSH.DataBase.EFCore;
@@ -12,15 +13,14 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
     /// <summary>
     /// EFCore仓储操作工作基类
     /// </summary>
-    public class ANSHEFCoreUnitOfWorkBase : ANSHUnitOfWorkBase, IANSHEFCoreUnitOfWork {
+    public abstract class ANSHEFCoreUnitOfWorkBase : ANSHUnitOfWorkBase, IANSHEFCoreUnitOfWork {
         /// <summary>
         /// 创建数据库连接
         /// </summary>
         /// <param name="db_connection">数据库连接</param>
         /// <param name="loggerfactory">日志记录</param>
-        public ANSHEFCoreUnitOfWorkBase (DBConnection db_connection, ILoggerFactory loggerfactory = null) : base (db_connection, loggerfactory) { }
+        public ANSHEFCoreUnitOfWorkBase (ANSHDbConnection db_connection, ILoggerFactory loggerfactory = null) : base (db_connection, loggerfactory) { }
 
-      
         /// <summary>
         /// 创建DbContext集合
         /// </summary>
@@ -33,9 +33,9 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
         /// <typeparam name="TResult">对应的BLL层对象</typeparam>
         /// <returns>返回对应的BLL层对象</returns>
         public virtual TResult Register<TResult> ()
-        where TResult : DBContext, new () {
+        where TResult : ANSHDbContextBase, new () {
             var result = new TResult ();
-            result.UseConnection (base.DBconnection, base.Loggerfactory);
+            result.UseConnection ((IsBeginTransactionThreadLocal.IsValueCreated && IsBeginTransactionThreadLocal.Value) ? this.TransactionDBConnectionThreadLocal.Value : base.DBconnection, base.Loggerfactory);
             AddDbContext (result);
             return result;
         }
@@ -44,7 +44,7 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
         /// 添加DbContext记录
         /// </summary>
         /// <param name="db"></param>
-        void AddDbContext (DBContext db) {
+        void AddDbContext (ANSHDbContextBase db) {
             _DbContext.Add (db);
         }
 
@@ -56,5 +56,53 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
             _DbContext?.ForEach (m => m.Dispose ());
             _DbContext?.Clear ();
         }
+
+        /// <summary>
+        /// 事物新建DBConnection对象
+        /// </summary>
+        ThreadLocal<ANSHDbConnection> TransactionDBConnectionThreadLocal { get; set; } = new ThreadLocal<ANSHDbConnection> ();
+
+        /// <summary>
+        /// 创建Connection对象
+        /// </summary>
+        /// <returns>Connection对象</returns>
+        protected abstract ANSHDbConnection CreateDBConnection ();
+
+        /// <summary>
+        /// 事物保护
+        /// </summary>
+        /// <param name="Method">事物保护的方法</param>
+        /// <param name="isolationLevel">隔离级别</param>
+        public override void ExecuteTransaction (Action Method, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {
+            try {
+                ++BeginTransactionCount.Value;
+                TransactionDBConnectionThreadLocal.Value = TransactionDBConnectionThreadLocal.Value??CreateDBConnection ();
+                TransactionDBConnectionThreadLocal.Value.BeginTransaction (isolationLevel);
+                IsBeginTransactionThreadLocal.Value = true;
+                Method ();
+                TransactionDBConnectionThreadLocal.Value.Commit ();
+                --BeginTransactionCount.Value;
+                if (BeginTransactionCount.Value == 0) { ClearTransactionDBConnectionThreadLocal (); }
+            } catch (Exception ex) {
+                ClearTransactionDBConnectionThreadLocal ();
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// 清除事物DBConnection对象
+        /// </summary>
+        void ClearTransactionDBConnectionThreadLocal () {
+            TransactionDBConnectionThreadLocal.Value.Rollback ();
+            TransactionDBConnectionThreadLocal.Value.Dispose ();
+            TransactionDBConnectionThreadLocal.Value = null;
+            IsBeginTransactionThreadLocal.Value = false;
+            BeginTransactionCount.Value = 0;
+        }
+
+        /// <summary>
+        /// 事物计数
+        /// </summary>
+        ThreadLocal<int> BeginTransactionCount { get; set; } = new ThreadLocal<int> (() => 0);
     }
 }

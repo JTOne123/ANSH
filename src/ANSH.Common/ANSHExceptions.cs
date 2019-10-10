@@ -96,5 +96,10 @@ public enum ANSHErrorCodes {
     /// <summary>
     /// 未登录或登录超时
     /// </summary>
+    未能识别的登录帐号和密码组合 = 60000,
+
+    /// <summary>
+    /// 未登录或登录超时
+    /// </summary>
     未登录或登录超时 = 60001,
 }

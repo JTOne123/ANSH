@@ -18,7 +18,7 @@ namespace ANSH.DataBase.IUnitOfWorks {
         /// <summary>
         /// 数据库链接及事物
         /// </summary>
-        DBConnection DBconnection {
+        ANSHDbConnection DBconnection {
             get;
         }
 

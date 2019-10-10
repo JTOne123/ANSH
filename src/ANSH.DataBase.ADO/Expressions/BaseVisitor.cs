@@ -14,7 +14,7 @@ namespace ANSH.DataBase.ADO.Expressions {
         /// </summary>
         /// <param name="db_parameters">参数</param>
         /// <returns>TSQL</returns>
-        public abstract string Visit (ref List<DBParameters> db_parameters);
+        public abstract string Visit (ref List<ANSHDbParameter> db_parameters);
 
         /// <summary>
         /// 创建翻译表达式树

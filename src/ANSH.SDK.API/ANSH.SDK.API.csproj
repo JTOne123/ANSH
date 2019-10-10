@@ -23,4 +23,9 @@
    <ProjectReference Include="..\ANSH.Json\ANSH.Json.csproj" />
    <ProjectReference Include="..\ANSH.Common\ANSH.Common.csproj" />
  </ItemGroup>
+
+ <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.MVC" Version="$(MicrosoftAspNetCoreMVCPackageVersion)" />
+ </ItemGroup>
+ 
 </Project>

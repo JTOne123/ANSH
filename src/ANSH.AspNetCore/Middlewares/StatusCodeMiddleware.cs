@@ -1,17 +1,15 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 
-namespace ANSH.AspNetCore.Middlewares
-{
+namespace ANSH.AspNetCore.Middlewares {
     /// <summary>
     /// 处理Response.StatusCode在400-599之间的中间件
     /// </summary>
-    public class StatusCodeMiddleware
-    {
+    public class StatusCodeMiddleware {
         /// <summary>
         /// 请求委托
         /// </summary>
@@ -27,8 +25,7 @@ namespace ANSH.AspNetCore.Middlewares
         /// </summary>
         /// <param name="next">请求委托</param>
         /// <param name="configure">配置处理</param>
-        public StatusCodeMiddleware(RequestDelegate next, Action<HttpContext, Exception> configure)
-        {
+        public StatusCodeMiddleware (RequestDelegate next, Action<HttpContext, Exception> configure) {
             _next = next;
             _configure = configure;
         }
@@ -38,23 +35,15 @@ namespace ANSH.AspNetCore.Middlewares
         /// </summary>
         /// <param name="context">当前上下文请求对象</param>
         /// <returns>返回异步操作</returns>
-        public async Task InvokeAsync(HttpContext context)
-        {
+        public async Task InvokeAsync (HttpContext context) {
             Exception _ex = null;
-            try
-            {
-                await _next(context);
-            }
-            catch (Exception ex)
-            {
+            try {
+                await _next (context);
+            } catch (Exception ex) {
                 _ex = ex;
-                context.Response.StatusCode = 500;
-            }
-            finally
-            {
-                if (context.Response.StatusCode >= 400 && context.Response.StatusCode <= 599)
-                {
-                    _configure(context, _ex);
+            } finally {
+                if ((context.Response.StatusCode >= 400 && context.Response.StatusCode <= 599) || _ex != null) {
+                    _configure (context, _ex);
                 }
             }
         }

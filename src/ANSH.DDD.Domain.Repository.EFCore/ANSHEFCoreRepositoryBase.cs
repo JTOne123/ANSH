@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,11 +26,11 @@ namespace ANSH.DDD.Domain.Repository.EFCore {
     /// <typeparam name="TPKey">主键类型</typeparam>
     /// <typeparam name="TRepositoryUnitOfWork">EFCore仓储操作工作基类接口</typeparam>
     /// <typeparam name="TAggregateRootContxt">EFCore实现</typeparam>
-    public abstract class ANSHEFCoreRepositoryBase<Entity, TPKey, TRepositoryUnitOfWork, TAggregateRootContxt> : IANSHEFCoreRepository<Entity, TPKey, TRepositoryUnitOfWork>
+    public class ANSHEFCoreRepositoryBase<Entity, TPKey, TRepositoryUnitOfWork, TAggregateRootContxt> : IANSHEFCoreRepository<Entity, TPKey, TRepositoryUnitOfWork>
         where Entity : ANSHEFCoreEntityBase<TPKey>, new ()
     where TRepositoryUnitOfWork : IANSHEFCoreUnitOfWork, IANSHRepositoryUnitOfWork
     where TPKey : struct, IEquatable<TPKey>
-        where TAggregateRootContxt : DBContextOptions<Entity>, new () {
+        where TAggregateRootContxt : ANSHDbContextOptionsBase<Entity>, new () {
 
             /// <summary>
             /// EFCore仓储操作工作类
@@ -45,13 +46,68 @@ namespace ANSH.DDD.Domain.Repository.EFCore {
             public ANSHEFCoreRepositoryBase (TRepositoryUnitOfWork work) {
                 Work = work;
             }
+            
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="specification">规约</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual List<Entity> GetList (IANSHSpecification<Entity> specification = null) => Work.Register<TAggregateRootContxt> ().Get (specification).ToList ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="specification">规约</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual List<TResult> GetList<TResult> (IANSHSpecification<Entity> specification, Expression<Func<Entity, TResult>> selector) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (specification, selector).ToList ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual List<Entity> GetList (Expression<Func<Entity, bool>> criteria) => Work.Register<TAggregateRootContxt> ().Get (criteria).ToList ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual List<TResult> GetList<TResult> (Expression<Func<Entity, bool>> criteria, Expression<Func<Entity, TResult>> selector) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (criteria, selector).ToList ();
 
             /// <summary>
             /// 获取指定实体
             /// </summary>
             /// <param name="specification">规约</param>
             /// <returns>返回满足条件的实体</returns>
-            public List<Entity> GetList (IANSHSpecification<Entity> specification = null) => GetListAsync (specification).Result;
+            public virtual Task<List<Entity>> GetListAsync (IANSHSpecification<Entity> specification = null) => Work.Register<TAggregateRootContxt> ().Get (specification).ToListAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="specification">规约</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<List<TResult>> GetListAsync<TResult> (IANSHSpecification<Entity> specification, Expression<Func<Entity, TResult>> selector)
+            where TResult : class => Work.Register<TAggregateRootContxt> ().Get (specification, selector).ToListAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<List<Entity>> GetListAsync (Expression<Func<Entity, bool>> criteria) => Work.Register<TAggregateRootContxt> ().Get (criteria).ToListAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<List<TResult>> GetListAsync<TResult> (Expression<Func<Entity, bool>> criteria, Expression<Func<Entity, TResult>> selector)
+            where TResult : class => Work.Register<TAggregateRootContxt> ().Get (criteria, selector).ToListAsync ();
 
             /// <summary>
             /// 获取指定实体
@@ -63,63 +119,234 @@ namespace ANSH.DDD.Domain.Repository.EFCore {
             /// <param name="page">页数</param>
             /// <param name="pagesize">每页数据条数</param>
             /// <returns>返回满足条件的实体</returns>
-            public List<Entity> GetList (out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20, IANSHSpecification<Entity> specification = null) => Work.Register<TAggregateRootContxt> ().Get (specification).ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToListAsync ().Result;
+            public virtual List<Entity> GetList (IANSHSpecification<Entity> specification, out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20) => Work.Register<TAggregateRootContxt> ().Get (specification).ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToList ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="specification">规约</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <param name="datacount">满足指定条件数据总条数</param>
+            /// <param name="pagecount">满足指定条件数据可分页总数</param>
+            /// <param name="hasnext">是否还有下一页</param>
+            /// <param name="page">页数</param>
+            /// <param name="pagesize">每页数据条数</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual List<TResult> GetList<TResult> (IANSHSpecification<Entity> specification, Expression<Func<Entity, TResult>> selector, out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20)
+            where TResult : class => Work.Register<TAggregateRootContxt> ().Get (specification, selector).ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToList ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="datacount">满足指定条件数据总条数</param>
+            /// <param name="pagecount">满足指定条件数据可分页总数</param>
+            /// <param name="hasnext">是否还有下一页</param>
+            /// <param name="page">页数</param>
+            /// <param name="pagesize">每页数据条数</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual List<Entity> GetList (out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20) => Work.Register<TAggregateRootContxt> ().Get ().ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToList ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <param name="datacount">满足指定条件数据总条数</param>
+            /// <param name="pagecount">满足指定条件数据可分页总数</param>
+            /// <param name="hasnext">是否还有下一页</param>
+            /// <param name="page">页数</param>
+            /// <param name="pagesize">每页数据条数</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual List<Entity> GetList (Expression<Func<Entity, bool>> criteria, out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20) => Work.Register<TAggregateRootContxt> ().Get (criteria).ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToList ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <param name="datacount">满足指定条件数据总条数</param>
+            /// <param name="pagecount">满足指定条件数据可分页总数</param>
+            /// <param name="hasnext">是否还有下一页</param>
+            /// <param name="page">页数</param>
+            /// <param name="pagesize">每页数据条数</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual List<TResult> GetList<TResult> (Expression<Func<Entity, bool>> criteria, Expression<Func<Entity, TResult>> selector, out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (criteria, selector).ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToList ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="datacount">满足指定条件数据总条数</param>
+            /// <param name="pagecount">满足指定条件数据可分页总数</param>
+            /// <param name="hasnext">是否还有下一页</param>
+            /// <param name="page">页数</param>
+            /// <param name="pagesize">每页数据条数</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<List<Entity>> GetListAsync (out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20) => Work.Register<TAggregateRootContxt> ().Get ().ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToListAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="specification">规约</param>
+            /// <param name="datacount">满足指定条件数据总条数</param>
+            /// <param name="pagecount">满足指定条件数据可分页总数</param>
+            /// <param name="hasnext">是否还有下一页</param>
+            /// <param name="page">页数</param>
+            /// <param name="pagesize">每页数据条数</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<List<Entity>> GetListAsync (IANSHSpecification<Entity> specification, out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20) => Work.Register<TAggregateRootContxt> ().Get (specification).ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToListAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="specification">规约</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <param name="datacount">满足指定条件数据总条数</param>
+            /// <param name="pagecount">满足指定条件数据可分页总数</param>
+            /// <param name="hasnext">是否还有下一页</param>
+            /// <param name="page">页数</param>
+            /// <param name="pagesize">每页数据条数</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<List<TResult>> GetListAsync<TResult> (IANSHSpecification<Entity> specification, Expression<Func<Entity, TResult>> selector, out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (specification, selector).ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToListAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <param name="datacount">满足指定条件数据总条数</param>
+            /// <param name="pagecount">满足指定条件数据可分页总数</param>
+            /// <param name="hasnext">是否还有下一页</param>
+            /// <param name="page">页数</param>
+            /// <param name="pagesize">每页数据条数</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<List<Entity>> GetListAsync (Expression<Func<Entity, bool>> criteria, out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20) => Work.Register<TAggregateRootContxt> ().Get (criteria).ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToListAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <param name="datacount">满足指定条件数据总条数</param>
+            /// <param name="pagecount">满足指定条件数据可分页总数</param>
+            /// <param name="hasnext">是否还有下一页</param>
+            /// <param name="page">页数</param>
+            /// <param name="pagesize">每页数据条数</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<List<TResult>> GetListAsync<TResult> (Expression<Func<Entity, bool>> criteria, Expression<Func<Entity, TResult>> selector, out int datacount, out int pagecount, out bool hasnext, int page = 1, int pagesize = 20) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (criteria,selector).ToPage (out datacount, out pagecount, out hasnext, page, pagesize).ToListAsync ();
 
             /// <summary>
             /// 获取指定实体
             /// </summary>
             /// <param name="specification">规约</param>
             /// <returns>返回满足条件的实体</returns>
-            public async Task<List<Entity>> GetListAsync (IANSHSpecification<Entity> specification = null) => await Work.Register<TAggregateRootContxt> ().Get (specification).ToListAsync ();
+            public virtual Entity GetOne (IANSHSpecification<Entity> specification = null) => Work.Register<TAggregateRootContxt> ().Get (specification).FirstOrDefault ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="specification">规约</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual TResult GetOne<TResult> (IANSHSpecification<Entity> specification, Expression<Func<Entity, TResult>> selector) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (specification, selector).FirstOrDefault ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Entity GetOne (Expression<Func<Entity, bool>> criteria) => Work.Register<TAggregateRootContxt> ().Get (criteria).FirstOrDefault ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual TResult GetOne<TResult> (Expression<Func<Entity, bool>> criteria, Expression<Func<Entity, TResult>> selector) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (criteria, selector).FirstOrDefault ();
 
             /// <summary>
             /// 获取指定实体
             /// </summary>
             /// <param name="specification">规约</param>
             /// <returns>返回满足条件的实体</returns>
-            public Entity GetOne (IANSHSpecification<Entity> specification = null) => GetOneAsync (specification).Result;
+            public virtual Task<Entity> GetOneAsync (IANSHSpecification<Entity> specification = null) => Work.Register<TAggregateRootContxt> ().Get (specification).FirstOrDefaultAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="specification">规约</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<TResult> GetOneAsync<TResult> (IANSHSpecification<Entity> specification, Expression<Func<Entity, TResult>> selector) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (specification, selector).FirstOrDefaultAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<Entity> GetOneAsync (Expression<Func<Entity, bool>> criteria) => Work.Register<TAggregateRootContxt> ().Get (criteria).FirstOrDefaultAsync ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual Task<TResult> GetOneAsync<TResult> (Expression<Func<Entity, bool>> criteria, Expression<Func<Entity, TResult>> selector) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (criteria, selector).FirstOrDefaultAsync ();
 
             /// <summary>
             /// 获取指定实体
             /// </summary>
             /// <param name="Id">主键</param>
             /// <returns>返回满足条件的实体</returns>
-            public Entity GetOne (TPKey Id) {
-                var specification = new ANSHEFCoreSpecificationBase<Entity> ();
-                specification.SetCriteria (m => m.Id.Equals (Id));
-                return GetOne (specification);
-            }
+            public virtual Entity GetOne (TPKey Id) => Work.Register<TAggregateRootContxt> ().Get (m => m.Id.Equals (Id)).FirstOrDefault ();
+
+            /// <summary>
+            /// 获取指定实体
+            /// </summary>
+            /// <param name="Id">主键</param>
+            /// <param name="selector">返回指定实体类型</param>
+            /// <returns>返回满足条件的实体</returns>
+            public virtual TResult GetOne<TResult> (TPKey Id, Expression<Func<Entity, TResult>> selector) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (m => m.Id.Equals (Id), selector).FirstOrDefault ();
 
             /// <summary>
             /// 获取指定实体
             /// </summary>
             /// <param name="Id">主键</param>
             /// <returns>返回满足条件的实体</returns>
-            public async Task<Entity> GetOneAsync (TPKey Id) {
-                var specification = new ANSHEFCoreSpecificationBase<Entity> ();
-                specification.SetCriteria (m => m.Id.Equals (Id));
-                return await GetOneAsync (specification);
-            }
-
+            public virtual Task<Entity> GetOneAsync (TPKey Id) => Work.Register<TAggregateRootContxt> ().Get (m => m.Id.Equals (Id)).FirstOrDefaultAsync ();
             /// <summary>
             /// 获取指定实体
             /// </summary>
-            /// <param name="specification">规约</param>
+            /// <param name="Id">主键</param>
+            /// <param name="selector">返回指定实体类型</param>
             /// <returns>返回满足条件的实体</returns>
-            public async Task<Entity> GetOneAsync (IANSHSpecification<Entity> specification = null) => await Work.Register<TAggregateRootContxt> ().Get (specification).FirstOrDefaultAsync ();
+            public virtual Task<TResult> GetOneAsync<TResult> (TPKey Id, Expression<Func<Entity, TResult>> selector) where TResult : class => Work.Register<TAggregateRootContxt> ().Get (m => m.Id.Equals (Id), selector).FirstOrDefaultAsync ();
 
             /// <summary>
             /// 获取指定实体数量
             /// </summary>
             /// <param name="specification">规约</param>
             /// <returns>返回满足条件的实体数量</returns>
-            public int Count (IANSHSpecification<Entity> specification = null) => CountAsync (specification).Result;
+            public virtual int Count (IANSHSpecification<Entity> specification = null) => Work.Register<TAggregateRootContxt> ().Get (specification).Count ();
+
+            /// <summary>
+            /// 获取指定实体数量
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <returns>返回满足条件的实体数量</returns>
+            public virtual int Count (Expression<Func<Entity, bool>> criteria) => Work.Register<TAggregateRootContxt> ().Get (criteria).Count ();
 
             /// <summary>
             /// 获取指定实体数量
             /// </summary>
             /// <param name="specification">规约</param>
             /// <returns>返回满足条件的实体数量</returns>
-            public async Task<int> CountAsync (IANSHSpecification<Entity> specification = null) => await Work.Register<TAggregateRootContxt> ().Get (specification).CountAsync ();
+            public virtual Task<int> CountAsync (IANSHSpecification<Entity> specification = null) => Work.Register<TAggregateRootContxt> ().Get (specification).CountAsync ();
+
+            /// <summary>
+            /// 获取指定实体数量
+            /// </summary>
+            /// <param name="criteria">条件</param>
+            /// <returns>返回满足条件的实体数量</returns>
+            public virtual Task<int> CountAsync (Expression<Func<Entity, bool>> criteria) => Work.Register<TAggregateRootContxt> ().Get (criteria).CountAsync ();
         }
 }

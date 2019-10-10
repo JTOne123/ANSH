@@ -112,9 +112,9 @@ namespace ANSH.DataBase.ADO {
         /// <returns>返回满足条件的模型</returns>
         public virtual List<TMODEL> GetList (out int datacount, out int pagecount, out bool hasnext, TMODEL where, int pageIndex = 1, int pageSize = 20, params string[] orderby) {
             var db_where = ConvertWHERE (where, out TableInfo tbinfo);
-            string Tsql = CreatePageTSQL (tbinfo, db_where, out DBParameters output, pageIndex, pageSize, orderby);
+            string Tsql = CreatePageTSQL (tbinfo, db_where, out ANSHDbParameter output, pageIndex, pageSize, orderby);
             logger?.LogDebug (Tsql);
-            List<DBParameters> dbparamses = new List<DBParameters> ();
+            List<ANSHDbParameter> dbparamses = new List<ANSHDbParameter> ();
             dbparamses.AddRange (db_where.Values.ToList ());
             dbparamses.Add (output);
             dbparamses.Remove (null);
@@ -200,7 +200,7 @@ namespace ANSH.DataBase.ADO {
         /// <param name="model">模型</param>
         /// <param name="tbinfo">表信息</param>
         /// <returns>参数集合key:表字段名，value:参数实例</returns>
-        protected Dictionary<string, DBParameters> ConvertMODEL (TMODEL model, out TableInfo tbinfo) {
+        protected Dictionary<string, ANSHDbParameter> ConvertMODEL (TMODEL model, out TableInfo tbinfo) {
             return ConvertMODEL (model, out tbinfo, true, null);
         }
 
@@ -210,7 +210,7 @@ namespace ANSH.DataBase.ADO {
         /// <param name="model">模型</param>
         /// <param name="tbinfo">表信息</param>
         /// <returns>参数集合key:表字段名，value:参数实例</returns>
-        protected Dictionary<string, DBParameters> ConvertWHERE (TMODEL model, out TableInfo tbinfo) {
+        protected Dictionary<string, ANSHDbParameter> ConvertWHERE (TMODEL model, out TableInfo tbinfo) {
             return ConvertMODEL (model, out tbinfo, false, "w_");
         }
         /// <summary>
@@ -221,8 +221,8 @@ namespace ANSH.DataBase.ADO {
         /// <param name="prefix">生成参数前缀名</param>
         /// <param name="ignore_identity">忽略自增列</param>
         /// <returns>参数集合key:表字段名，value:参数实例</returns>
-        Dictionary<string, DBParameters> ConvertMODEL (TMODEL model, out TableInfo tbinfo, bool ignore_identity, string prefix) {
-            Dictionary<string, DBParameters> dbparameters = new Dictionary<string, DBParameters> ();
+        Dictionary<string, ANSHDbParameter> ConvertMODEL (TMODEL model, out TableInfo tbinfo, bool ignore_identity, string prefix) {
+            Dictionary<string, ANSHDbParameter> dbparameters = new Dictionary<string, ANSHDbParameter> ();
             tbinfo = new TableInfo ();
             var type = model.GetType ();
             if (!type.IsDefined (typeof (TableAttribute))) {
@@ -267,7 +267,7 @@ namespace ANSH.DataBase.ADO {
                 if (dbparameters.ContainsKey (p_name)) {
                     throw new Exception ($"{nameof(model)}中含有重复参数{name}");
                 }
-                dbparameters.Add (p_name, new DBParameters () {
+                dbparameters.Add (p_name, new ANSHDbParameter () {
                     ParameterName = $"@{prefix}{p_name}",
                         Value = value
                 });
@@ -315,7 +315,7 @@ namespace ANSH.DataBase.ADO {
         /// <param name="whereparameters">条件参数</param>
         /// <param name="orderby">排序</param>
         /// <returns>Select语句</returns>
-        public abstract string CreateSelectTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> whereparameters, params string[] orderby);
+        public abstract string CreateSelectTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> whereparameters, params string[] orderby);
 
         /// <summary>
         /// 构建Select Count 语句
@@ -323,7 +323,7 @@ namespace ANSH.DataBase.ADO {
         /// <param name="tbinfo">表信息</param>
         /// <param name="whereparameters">条件参数</param>
         /// <returns>Select Count 语句</returns>
-        public abstract string CreateSelectCountTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> whereparameters);
+        public abstract string CreateSelectCountTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> whereparameters);
 
         /// <summary>
         /// 构建Page语句
@@ -335,7 +335,7 @@ namespace ANSH.DataBase.ADO {
         /// <param name="pageIndex">第几页</param>
         /// <param name="pageSize">每页多少条</param>
         /// <returns>Page语句</returns>
-        public abstract string CreatePageTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> whereparameters, out Connection.DBParameters output, int pageIndex = 1, int pageSize = 20, params string[] orderby);
+        public abstract string CreatePageTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> whereparameters, out Connection.ANSHDbParameter output, int pageIndex = 1, int pageSize = 20, params string[] orderby);
 
     }
 }

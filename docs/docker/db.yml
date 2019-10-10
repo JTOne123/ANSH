@@ -3,9 +3,12 @@ version: '3.6'
 
 services:
   mssql:
-    image: mcr.microsoft.com/mssql/server:2017-CU12-ubuntu
+    image: mcr.microsoft.com/mssql/server:2017-CU14-ubuntu
     ports:
-      - "1433:1433"
+      - target: 1433
+        published: 1433
+        protocol: tcp
+        mode: host
     environment:
       # 环境变量详细说明：https://docs.microsoft.com/zh-cn/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-2017
       # 在设置为任何值（例如“Y”）时接受 SQL Server 许可协议。
@@ -20,6 +23,8 @@ services:
       - MSSQL_ENABLE_HADR=1
       # 设置 SQL Server 的默认排序规则。 这会重写排序规则的语言 id (LCID) 的默认的映射。
       - MSSQL_COLLATION=Chinese_PRC_CI_AS
+      # 设置时区
+      - TZ=Asia/Shanghai
     networks: 
       swarms:
         aliases:

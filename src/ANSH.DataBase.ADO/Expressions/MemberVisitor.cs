@@ -27,7 +27,7 @@ namespace ANSH.DataBase.ADO.Expressions {
         /// </summary>
         /// <param name="db_parameters">参数</param>
         /// <returns>TSQL</returns>
-        public override string Visit (ref List<DBParameters> db_parameters) {
+        public override string Visit (ref List<ANSHDbParameter> db_parameters) {
             if (node.Expression.NodeType is ExpressionType.Parameter) {
                 return node.Member.Name;
             } else if (node.Expression.NodeType is ExpressionType.Constant) {

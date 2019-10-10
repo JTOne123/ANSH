@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 /// <summary>
 /// 拓展类方法
@@ -13,6 +14,15 @@ public static class ANSHJsonExtensions {
     /// <returns>返回Json格式字符串</returns>
     public static string ToJson (this Object value) {
         return JsonConvert.SerializeObject (value, new JsonSerializerSettings () { NullValueHandling = NullValueHandling.Ignore });
+    }
+
+    /// <summary>
+    /// 生成Json格式
+    /// </summary>
+    /// <param name="value">当前实例值</param>
+    /// <returns>返回Json格式字符串</returns>
+    public static string ToJsonCamelCase (this Object value) {
+        return JsonConvert.SerializeObject (value, new JsonSerializerSettings () { NullValueHandling = NullValueHandling.Ignore, ContractResolver = new CamelCasePropertyNamesContractResolver () });
     }
 
     /// <summary>

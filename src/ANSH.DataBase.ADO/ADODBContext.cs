@@ -11,7 +11,7 @@ namespace ANSH.DataBase.ADO {
         /// <summary>
         /// 数据库链接以及事物
         /// </summary>
-        public DBConnection server_connection {
+        public ANSHDbConnection server_connection {
             get;
             set;
         }

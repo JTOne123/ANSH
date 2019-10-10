@@ -21,7 +21,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
             /// <param name="tbinfo">表信息</param>
             /// <param name="dbparameters">参数</param>
             /// <returns>INSERT语句</returns>
-            public override string CreateInsertTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> dbparameters) {
+            public override string CreateInsertTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> dbparameters) {
                 StringBuilder Tsql = new StringBuilder ();
                 if (dbparameters?.Count > 0) {
                     Tsql.Append ($" INSERT INTO {tbinfo.TableName} ({string.Join (",", dbparameters.Keys.ToArray ())}) VALUES ({string.Join (",", dbparameters.Values.ToList().Select(m=>m.ParameterName).ToArray ())});SELECT SCOPE_IDENTITY()");
@@ -36,7 +36,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
             /// <param name="dbparameters">参数</param>
             /// <param name="whereparameters">条件参数</param>
             /// <returns>Update语句</returns>
-            public override string CreateUpdateTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> dbparameters, Dictionary<string, DBParameters> whereparameters) {
+            public override string CreateUpdateTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> dbparameters, Dictionary<string, ANSHDbParameter> whereparameters) {
                 StringBuilder Tsql = new StringBuilder ();
                 if (dbparameters?.Count > 0) {
                     Tsql.Append ($" UPDATE {tbinfo.TableName} SET ");
@@ -55,7 +55,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
             /// <param name="tbinfo">表信息</param>
             /// <param name="whereparameters">条件参数</param>
             /// <returns>Delete语句</returns>
-            public override string CreateDeleteTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> whereparameters) =>
+            public override string CreateDeleteTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> whereparameters) =>
                 $" DELETE FROM {tbinfo.TableName} {CreateWhere (whereparameters)}";
 
             /// <summary>
@@ -64,7 +64,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
             /// <param name="whereparameters">条件参数</param>
             /// <param name="TableASName">表别名</param>
             /// <returns>WHERE语句</returns>
-            public string CreateWhere (Dictionary<string, DBParameters> whereparameters, string TableASName = null) {
+            public string CreateWhere (Dictionary<string, ANSHDbParameter> whereparameters, string TableASName = null) {
                 StringBuilder Tsql = new StringBuilder ();
                 List<string> Titem = new List<string> ();
                 if (whereparameters?.Count > 0) {
@@ -88,7 +88,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
             /// <param name="whereparameters">条件参数</param>
             /// <param name="orderby">排序</param>
             /// <returns>Select语句</returns>
-            public override string CreateSelectTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> whereparameters, params string[] orderby) {
+            public override string CreateSelectTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> whereparameters, params string[] orderby) {
                 StringBuilder Tsql = new StringBuilder ();
                 Tsql.Append (" SELECT ");
                 foreach (var fields in tbinfo.Fields) {
@@ -114,7 +114,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
             /// <param name="tbinfo">表信息</param>
             /// <param name="whereparameters">条件参数</param>
             /// <returns>Select Count 语句</returns>
-            public override string CreateSelectCountTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> whereparameters) => $" SELECT COUNT(*) FROM {tbinfo.TableName} {tbinfo.TableASName} {CreateWhere (whereparameters,tbinfo.TableASName)} ";
+            public override string CreateSelectCountTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> whereparameters) => $" SELECT COUNT(*) FROM {tbinfo.TableName} {tbinfo.TableASName} {CreateWhere (whereparameters,tbinfo.TableASName)} ";
 
             /// <summary>
             /// 构建Page语句
@@ -126,7 +126,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
             /// <param name="pageIndex">第几页</param>
             /// <param name="pageSize">每页多少条</param>
             /// <returns>Page语句</returns>
-            public override string CreatePageTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> whereparameters, out Connection.DBParameters output, int pageIndex = 1, int pageSize = 20, params string[] orderby) {
+            public override string CreatePageTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> whereparameters, out Connection.ANSHDbParameter output, int pageIndex = 1, int pageSize = 20, params string[] orderby) {
                 StringBuilder PageSql = new StringBuilder ();
                 StringBuilder Tsql = new StringBuilder ();
                 StringBuilder CountSql = new StringBuilder ();
@@ -159,7 +159,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
             /// <param name="pageIndex">第几页</param>
             /// <param name="pageSize">每页多少条</param>
             /// <returns>Page语句</returns>
-            public string CreatePageTSQL (string Tsql, string orderby, out DBParameters output, int pageIndex = 1, int pageSize = 20) {
+            public string CreatePageTSQL (string Tsql, string orderby, out ANSHDbParameter output, int pageIndex = 1, int pageSize = 20) {
                 string CountSql = $" SELECT @ROWSCOUNT=Count(*) FROM ({Tsql}) countpage";
                 string PageSql = $"SELECT tbpage.* FROM ( SELECT ROW_NUMBER() OVER (ORDER BY {orderby}) AS tab_Order,* FROM ({Tsql}) AS itmpage ) AS tbpage WHERE tbpage.tab_Order > ${(pageIndex - 1) * pageSize} AND tbpage.tab_Order <= {pageIndex * pageSize};{CountSql.ToString()} ";
                 //                 string PageSql = $@"
@@ -167,7 +167,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
                 // ORDER BY {orderby}
                 // OFFSET {(pageIndex-1)*pageSize} ROWS
                 // FETCH NEXT {pageSize} ROWS ONLY ; {CountSql}";
-                output = new DBParameters () {
+                output = new ANSHDbParameter () {
                     ParameterName = "ROWSCOUNT",
                     Size = 32,
                     Direction = System.Data.ParameterDirection.Output,
@@ -189,13 +189,13 @@ namespace ANSH.DataBase.ADO.SQLServer {
             /// <param name="hasnext">是否含有下一页</param>
             /// <param name="orderby">排序</param>
             /// <returns>返回满足条件的模型</returns>
-            public virtual List<TMODEL> GetList (string TbSql, List<DBParameters> dbparamses, out int datacount, out int pagecount, out bool hasnext, int pageIndex = 1, int pageSize = 20, params string[] orderby) {
-                string Tsql = CreatePageTSQL (TbSql, string.Join (",", orderby?.ToArray ()), out DBParameters output, pageIndex, pageSize);
+            public virtual List<TMODEL> GetList (string TbSql, List<ANSHDbParameter> dbparamses, out int datacount, out int pagecount, out bool hasnext, int pageIndex = 1, int pageSize = 20, params string[] orderby) {
+                string Tsql = CreatePageTSQL (TbSql, string.Join (",", orderby?.ToArray ()), out ANSHDbParameter output, pageIndex, pageSize);
                 using (logger.BeginScope ("GetList TO Page")) {
                     logger?.LogDebug (TbSql);
                     logger?.LogDebug (Tsql);
                 }
-                dbparamses = dbparamses??new List<DBParameters> ();
+                dbparamses = dbparamses??new List<ANSHDbParameter> ();
                 dbparamses.Add (output);
                 var result = DataTableToList (base.server_connection.ExecuteSQLQuery (Tsql, dbparamses));
                 datacount = Convert.ToInt32 (output.Value);

@@ -463,40 +463,6 @@ public static class ANSHCommonExtensions {
     public static byte[] MD5Encryp (this Stream value) => value.ToByte ().MD5Encryp ();
     #endregion
 
-    #region SHA1
-    /// <summary>
-    /// SHA1加密
-    /// </summary>
-    /// <param name="value">当前实例值</param>
-    /// <returns>SHA1加密数据值</returns>
-    public static string SHA1Encryp (this string value) {
-        return ASCIIEncoding.UTF8.GetBytes (value).SHA1Encryp ();
-    }
-
-    /// <summary>
-    /// SHA1加密
-    /// </summary>
-    /// <param name="value">当前实例值</param>
-    /// <returns>SHA1加密数据值</returns>
-    public static string SHA1Encryp (this byte[] value) {
-        byte[] tmpHash = SHA1.Create ().ComputeHash (value);
-        StringBuilder sha1 = new StringBuilder ();
-        foreach (byte bt in tmpHash) {
-            sha1.Append (bt.ToString ("x2"));
-        }
-        return sha1.ToString ();
-    }
-
-    /// <summary>
-    /// SHA1加密
-    /// </summary>
-    /// <param name="value">当前实例值</param>
-    /// <returns>SHA1加密数据值</returns>
-    public static string SHA1Encryp (this Stream value) {
-        return value.ToByte ().SHA1Encryp ();
-    }
-    #endregion
-
     #region DesEncrypt
 
     /// <summary>
@@ -917,4 +883,17 @@ public static class ANSHCommonExtensions {
     /// <param name="value">虚拟路径</param>
     /// <returns>物理路径</returns>
     public static string ToPhysicalPathBeginRoot (this string value) => $"{Directory.GetCurrentDirectory().TrimEnd('/', '\\')}{value?.TrimStart('/', '\\') ?? string.Empty}";
+
+
+    /// <summary>
+    /// 按照Path合并字符串
+    /// </summary>
+    /// <param name="value">当前值</param>
+    /// <param name="pathParams">需合并的字符串</param>
+    /// <returns>合并后的path</returns>
+    public static string PathCombine (this string value, params string[] pathParams) {
+        var pathParamsList = pathParams?.ToList () ?? new List<string> ();
+        pathParamsList.Insert (0, value);
+        return Path.Combine (pathParamsList.ToArray ());
+    }
 }

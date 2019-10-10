@@ -52,7 +52,7 @@ namespace ANSH.DataBase.ADO {
                     return;
                 }
                 logger?.LogDebug (sql_update);
-                List<DBParameters> dbparamses = new List<DBParameters> ();
+                List<ANSHDbParameter> dbparamses = new List<ANSHDbParameter> ();
                 dbparamses.AddRange (db_update.Values.ToList ());
                 dbparamses.AddRange (db_where.Values.ToList ());
                 dbparamses.Remove (null);
@@ -93,7 +93,7 @@ namespace ANSH.DataBase.ADO {
             /// <param name="tbinfo">表信息</param>
             /// <param name="dbparameters">参数</param>
             /// <returns>INSERT语句</returns>
-            public abstract string CreateInsertTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> dbparameters);
+            public abstract string CreateInsertTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> dbparameters);
 
             /// <summary>
             /// 构建Update语句
@@ -102,7 +102,7 @@ namespace ANSH.DataBase.ADO {
             /// <param name="dbparameters">参数</param>
             /// <param name="whereparameters">条件参数</param>
             /// <returns>Update语句</returns>
-            public abstract string CreateUpdateTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> dbparameters, Dictionary<string, DBParameters> whereparameters);
+            public abstract string CreateUpdateTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> dbparameters, Dictionary<string, ANSHDbParameter> whereparameters);
 
             /// <summary>
             /// 构建Delete语句
@@ -110,6 +110,6 @@ namespace ANSH.DataBase.ADO {
             /// <param name="tbinfo">表信息</param>
             /// <param name="whereparameters">条件参数</param>
             /// <returns>Delete语句</returns>
-            public abstract string CreateDeleteTSQL (TableInfo tbinfo, Dictionary<string, DBParameters> whereparameters);
+            public abstract string CreateDeleteTSQL (TableInfo tbinfo, Dictionary<string, ANSHDbParameter> whereparameters);
         }
 }

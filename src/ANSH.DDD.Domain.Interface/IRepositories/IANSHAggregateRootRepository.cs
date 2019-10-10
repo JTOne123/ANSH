@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using ANSH.DDD.Domain.Specifications;
 
 namespace ANSH.DDD.Domain.Interface.IRepositories {
@@ -14,7 +15,7 @@ namespace ANSH.DDD.Domain.Interface.IRepositories {
         /// </summary>
         /// <param name="TAggregateRoots">需要添加的实体</param>
         /// <returns>添加后的实体</returns>
-        TAggregateRoot[] Insert (params TAggregateRoot[] TAggregateRoots);
+        TAggregateRoot[] Insert (TAggregateRoot[] TAggregateRoots);
 
         /// <summary>
         /// 添加实体
@@ -24,11 +25,20 @@ namespace ANSH.DDD.Domain.Interface.IRepositories {
         TAggregateRoot Insert (Action<TAggregateRoot> action);
 
         /// <summary>
+        /// 添加实体
+        /// </summary>
+        /// <param name="model">需要添加的实体</param>
+        /// <returns>添加后的实体</returns>
+        TAggregateRoot Insert (TAggregateRoot model);
+
+        /// <summary>
         /// 修改指定实体
         /// </summary>
         /// <param name="action">需要修改的项</param>
         /// <param name="specification">规约</param>
         void Update (Action<TAggregateRoot> action, IANSHSpecificationCommit<TAggregateRoot> specification = null);
+
+        
 
         /// <summary>
         /// 修改指定实体
@@ -48,5 +58,18 @@ namespace ANSH.DDD.Domain.Interface.IRepositories {
         /// </summary>
         /// <param name="Id">主键</param>
         void Delete (TPKey Id);
+
+        /// <summary>
+        /// 修改指定实体
+        /// </summary>
+        /// <param name="action">需要修改的项</param>
+        /// <param name="criteria">条件</param>
+        void Update (Action<TAggregateRoot> action, Expression<Func<TAggregateRoot, bool>> criteria);
+
+        /// <summary>
+        /// 删除指定实体
+        /// </summary>
+        /// <param name="criteria">条件</param>
+        void Delete (Expression<Func<TAggregateRoot, bool>> criteria);
     }
 }

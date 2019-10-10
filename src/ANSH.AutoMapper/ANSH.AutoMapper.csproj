@@ -1,5 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  
   <Import Project="..\sources.props" />
+
+   <ItemGroup>
+    <ProjectReference Include="..\ANSH.Common\ANSH.Common.csproj" />
+  </ItemGroup>
+
+
   <PropertyGroup>
     <TargetFramework>netstandard$(NetstandardBase)</TargetFramework>
     <Authors>$(AuthorsProjectInFormation)</Authors>

@@ -14,7 +14,7 @@ namespace ANSH.DataBase.ADO.SQLServer {
         /// </summary>
         /// <param name="connection">数据库连接</param>
         /// <param name="logger">日志记录</param>
-        public SQLOptions (string connection, ILoggerFactory logger = null) : base (new DBConnection (new SqlConnection (connection)), logger) {
+        public SQLOptions (string connection, ILoggerFactory logger = null) : base (new ANSHDbConnection (new SqlConnection (connection)), logger) {
 
         }
     }

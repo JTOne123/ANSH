@@ -27,7 +27,7 @@ services:
       update_config:
         parallelism: 1
         delay: 10s
-      replicas: 1
+      mode: global
       placement:
         constraints: 
           - node.role == manager
@@ -56,7 +56,7 @@ services:
       update_config:
         parallelism: 1
         delay: 10s
-      replicas: 1
+      mode: global
       placement:
         constraints: 
           - node.role == manager

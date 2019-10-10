@@ -13,6 +13,6 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
         /// </summary>
         /// <typeparam name="TResult">对应的BLL层对象</typeparam>
         /// <returns>返回对应的BLL层对象</returns>
-        TResult Register<TResult> () where TResult : DBContext, new ();
+        TResult Register<TResult> () where TResult : ANSHDbContextBase, new ();
     }
 }

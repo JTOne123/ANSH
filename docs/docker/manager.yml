@@ -2,9 +2,12 @@ version: '3.6'
 
 services:
   portainer:
-    image: portainer/portainer:1.19.2
+    image: portainer/portainer:latest
     ports:
-      - "9000:9000"
+      - target: 9000
+        published: 9000
+        protocol: tcp
+        mode: host
     command: -H unix:///var/run/docker.sock
     networks: 
       swarms:
@@ -24,17 +27,18 @@ services:
         condition: on-failure
       update_config:
         parallelism: 1
-        delay: 10s
-      replicas: 1
+        delay: 1s
       placement:
         constraints: 
-          - node.role == manager
-          - node.labels.identity == leader
+          - node.labels.swarm.cluster == leader
 
   registry:
-    image: registry:2.6.2
+    image: registry:latest
     ports:
-      - "5000:5000"
+      - target: 5000
+        published: 5000
+        protocol: tcp
+        mode: host
     networks: 
       swarms:
         aliases:
@@ -52,12 +56,10 @@ services:
         condition: on-failure
       update_config:
         parallelism: 1
-        delay: 10s
-      replicas: 1
+        delay: 1s
       placement:
         constraints: 
-          - node.role == manager
-          - node.labels.identity == leader
+          - node.labels.swarm.cluster == leader
 
 
 networks:

@@ -27,7 +27,7 @@ namespace ANSH.DataBase.ADO.Expressions {
         /// </summary>
         /// <param name="db_parameters">参数</param>
         /// <returns>TSQL</returns>
-        public override string Visit (ref List<DBParameters> db_parameters) {
+        public override string Visit (ref List<ANSHDbParameter> db_parameters) {
             var methodInfo = node.Method;
             if (methodInfo.Name == "Contains") {
                 var receiverVisitor = CreateVisitor (node.Object);

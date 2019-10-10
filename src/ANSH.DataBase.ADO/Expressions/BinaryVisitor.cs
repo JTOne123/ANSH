@@ -26,7 +26,7 @@ namespace ANSH.DataBase.ADO.Expressions {
         /// </summary>
         /// <param name="db_parameters">参数</param>
         /// <returns>TSQL</returns>
-        public override string Visit (ref List<DBParameters> db_parameters) {
+        public override string Visit (ref List<ANSHDbParameter> db_parameters) {
             var left = CreateVisitor (node.Left);
             var right = CreateVisitor (node.Right);
             return $" {left.Visit (ref db_parameters)} {Method} {right.Visit (ref db_parameters)} ";

@@ -14,7 +14,7 @@ namespace ANSH.DataBase.ADO {
         /// </summary>
         /// <param name="db_connection">数据库连接</param>
         /// <param name="loggerfactory">日志记录</param>
-        public DBOptions (DBConnection db_connection, ILoggerFactory loggerfactory = null) {
+        public DBOptions (ANSHDbConnection db_connection, ILoggerFactory loggerfactory = null) {
             _db_connection = db_connection;
             _loggerfactory = loggerfactory;
         }
@@ -30,7 +30,7 @@ namespace ANSH.DataBase.ADO {
         /// <summary>
         /// 数据库链接及事物
         /// </summary>
-        DBConnection _db_connection {
+        ANSHDbConnection _db_connection {
             get;
             set;
         } = null;
