@@ -4,27 +4,6 @@ namespace ANSH.SDK.API.RequestContracts.Models {
     /// Get请求参数基类
     /// </summary>
     public abstract class ANSHGetRequestModelBase {
-
-        /// <summary>
-        /// API方法名称
-        /// </summary>
-        public abstract string APIName {
-            get;
-        }
-
-        /// <summary>
-        /// API版本号
-        /// </summary>
-        public abstract string APIVersion {
-            get;
-        }
-
-        /// <summary>
-        /// 授权票据
-        /// </summary>
-        /// <value></value>
-        public abstract string AccessToken { get; }
-
         /// <summary>
         /// 验证参数合法性
         /// </summary>

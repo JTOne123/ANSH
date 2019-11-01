@@ -96,17 +96,26 @@ namespace ANSH.AspNetCore.API {
         /// 验证参数合法性
         /// </summary>
         /// <param name="request">请求数据</param>
+        /// <typeparam name="TQueryRequest">查询参数</typeparam>
         /// <typeparam name="TResponse">响应</typeparam>
         /// <typeparam name="TModelResponse">响应模型</typeparam>
-        protected void Validate<TResponse, TModelResponse> (ANSHGetRequestBase<TResponse, TModelResponse> request)
+        protected void Validate<TQueryRequest, TResponse, TModelResponse> (ANSHGetRequestBase<TQueryRequest, TResponse, TModelResponse> request)
         where TResponse : ANSHGetResponseBase<TModelResponse>, new ()
-        where TModelResponse : class {
-            TResponse response = new TResponse ();
-            if (request == null) {
-                throw new ANSHExceptions (ANSHErrorCodes.无效的数据, "未能识别的JSON数据");
-            }
-            if (!request.Validate (out string msg)) {
-                throw new ANSHExceptions (ANSHErrorCodes.无效的数据, msg);
+        where TModelResponse : class
+        where TQueryRequest : ANSHGetRequestModelBase, new () {
+            TResponse response = new TResponse (); {
+                if (request == null) {
+                    throw new ANSHExceptions (ANSHErrorCodes.无效的数据, "未能识别的参数");
+                }
+                if (!request.Validate (out string msg)) {
+                    throw new ANSHExceptions (ANSHErrorCodes.无效的数据, msg);
+                }
+
+            } {
+                request.Query = request.Query ?? new TQueryRequest ();
+                if (!request.Query.Validate (out string msg)) {
+                    throw new ANSHExceptions (ANSHErrorCodes.无效的数据, msg);
+                }
             }
         }
 
@@ -114,19 +123,28 @@ namespace ANSH.AspNetCore.API {
         /// 验证参数合法性
         /// </summary>
         /// <param name="request">请求数据</param>
+        /// <typeparam name="TQueryRequest">查询参数</typeparam>
         /// <typeparam name="TResponse">响应</typeparam>
         /// <typeparam name="TModelResponse">响应模型</typeparam>
         /// <typeparam name="TPageResponesModel">分页信息模型</typeparam>
-        protected void Validate<TResponse, TModelResponse, TPageResponesModel> (ANSHGetByPageRequestBase<TResponse, TModelResponse, TPageResponesModel> request)
+        protected void Validate<TQueryRequest, TResponse, TModelResponse, TPageResponesModel> (ANSHGetByPageRequestBase<TQueryRequest, TResponse, TModelResponse, TPageResponesModel> request)
         where TResponse : ANSHGetByPageResponseBase<TModelResponse, TPageResponesModel>, new ()
         where TModelResponse : class
-        where TPageResponesModel : IANSHPageResponesModelBase, new () {
-            TResponse response = new TResponse ();
-            if (request == null) {
-                throw new ANSHExceptions (ANSHErrorCodes.无效的数据, "未能识别的JSON数据");
-            }
-            if (!request.Validate (out string msg)) {
-                throw new ANSHExceptions (ANSHErrorCodes.无效的数据, msg);
+        where TPageResponesModel : IANSHPageResponesModelBase, new ()
+        where TQueryRequest : ANSHGetByPageRequestModelBase, new () {
+            TResponse response = new TResponse (); {
+                if (request == null) {
+                    throw new ANSHExceptions (ANSHErrorCodes.无效的数据, "未能识别的参数");
+                }
+                if (!request.Validate (out string msg)) {
+                    throw new ANSHExceptions (ANSHErrorCodes.无效的数据, msg);
+                }
+
+            } {
+                request.Query = request.Query ?? new TQueryRequest ();
+                if (!request.Query.Validate (out string msg)) {
+                    throw new ANSHExceptions (ANSHErrorCodes.无效的数据, msg);
+                }
             }
         }
 
@@ -134,17 +152,26 @@ namespace ANSH.AspNetCore.API {
         /// 验证参数合法性
         /// </summary>
         /// <param name="request">请求数据</param>
+        /// <typeparam name="TQueryRequest">查询参数</typeparam>
         /// <typeparam name="TResponse">响应</typeparam>
         /// <typeparam name="TModelResponse">响应模型</typeparam>
-        protected void Validate<TResponse, TModelResponse> (ANSHGetListRequestBase<TResponse, TModelResponse> request)
+        protected void Validate<TQueryRequest, TResponse, TModelResponse> (ANSHGetListRequestBase<TQueryRequest, TResponse, TModelResponse> request)
         where TResponse : ANSHGetListResponseBase<TModelResponse>, new ()
-        where TModelResponse : class {
-            TResponse response = new TResponse ();
-            if (request == null) {
-                throw new ANSHExceptions (ANSHErrorCodes.无效的数据, "未能识别的JSON数据");
-            }
-            if (!request.Validate (out string msg)) {
-                throw new ANSHExceptions (ANSHErrorCodes.无效的数据, msg);
+        where TModelResponse : class
+        where TQueryRequest : ANSHGetRequestModelBase, new () {
+            TResponse response = new TResponse (); {
+                if (request == null) {
+                    throw new ANSHExceptions (ANSHErrorCodes.无效的数据, "未能识别的参数");
+                }
+                if (!request.Validate (out string msg)) {
+                    throw new ANSHExceptions (ANSHErrorCodes.无效的数据, msg);
+                }
+
+            } {
+                request.Query = request.Query ?? new TQueryRequest ();
+                if (!request.Query.Validate (out string msg)) {
+                    throw new ANSHExceptions (ANSHErrorCodes.无效的数据, msg);
+                }
             }
         }
 
@@ -153,15 +180,17 @@ namespace ANSH.AspNetCore.API {
         /// </summary>
         /// <param name="request">请求数据</param>
         /// <param name="func">项处理</param>
+        /// <typeparam name="TQueryRequest">查询参数</typeparam>
         /// <typeparam name="TResponse">响应</typeparam>
         /// <typeparam name="TModelResponse">响应模型</typeparam>
         /// <returns>响应</returns>
-        protected TResponse Get<TResponse, TModelResponse> (ANSHGetRequestBase<TResponse, TModelResponse> request, Func<TModelResponse> func)
+        protected TResponse Get<TQueryRequest, TResponse, TModelResponse> (ANSHGetRequestBase<TQueryRequest, TResponse, TModelResponse> request, Func<TQueryRequest, TModelResponse> func)
         where TResponse : ANSHGetResponseBase<TModelResponse>, new ()
-        where TModelResponse : class => Execute (() => {
+        where TModelResponse : class
+        where TQueryRequest : ANSHGetRequestModelBase, new () => Execute (() => {
             TResponse response = new TResponse ();
             Validate (request);
-            response.ResultItem = func ();
+            response.ResultItem = func (request.Query);
             return response;
         });
 
@@ -170,15 +199,17 @@ namespace ANSH.AspNetCore.API {
         /// </summary>
         /// <param name="request">请求数据</param>
         /// <param name="func">项处理</param>
+        /// <typeparam name="TQueryRequest">查询参数</typeparam>
         /// <typeparam name="TResponse">响应</typeparam>
         /// <typeparam name="TModelResponse">响应模型</typeparam>
         /// <returns>响应</returns>
-        protected TResponse Get<TResponse, TModelResponse> (ANSHGetListRequestBase<TResponse, TModelResponse> request, Func<List<TModelResponse>> func)
+        protected TResponse Get<TQueryRequest, TResponse, TModelResponse> (ANSHGetListRequestBase<TQueryRequest, TResponse, TModelResponse> request, Func<TQueryRequest, List<TModelResponse>> func)
         where TResponse : ANSHGetListResponseBase<TModelResponse>, new ()
-        where TModelResponse : class => Execute (() => {
+        where TModelResponse : class
+        where TQueryRequest : ANSHGetRequestModelBase, new () => Execute (() => {
             TResponse response = new TResponse ();
             Validate (request);
-            response.ResultList = func ();
+            response.ResultList = func (request.Query);
             return response;
         });
 
@@ -187,16 +218,18 @@ namespace ANSH.AspNetCore.API {
         /// </summary>
         /// <param name="request">请求数据</param>
         /// <param name="func">项处理</param>
+        /// <typeparam name="TQueryRequest">查询参数</typeparam>
         /// <typeparam name="TResponse">响应</typeparam>
         /// <typeparam name="TModelResponse">响应模型</typeparam>
         /// <typeparam name="TPageResponesModel">分页信息模型</typeparam>
         /// <returns>响应</returns>
-        protected TResponse Get<TResponse, TModelResponse, TPageResponesModel> (ANSHGetByPageRequestBase<TResponse, TModelResponse, TPageResponesModel> request, Func < (List<TModelResponse>, TPageResponesModel) > func)
+        protected TResponse Get<TQueryRequest, TResponse, TModelResponse, TPageResponesModel> (ANSHGetByPageRequestBase<TQueryRequest, TResponse, TModelResponse, TPageResponesModel> request, Func < TQueryRequest, (List<TModelResponse>, TPageResponesModel) > func)
         where TResponse : ANSHGetByPageResponseBase<TModelResponse, TPageResponesModel>, new ()
         where TModelResponse : class
-        where TPageResponesModel : IANSHPageResponesModelBase, new () => Execute (() => {
+        where TPageResponesModel : IANSHPageResponesModelBase, new ()
+        where TQueryRequest : ANSHGetByPageRequestModelBase, new () => Execute (() => {
             Validate (request);
-            var result = func ();
+            var result = func (request.Query);
             TResponse response = new TResponse ();
             response.ResultList = result.Item1;
             response.PageInfo = result.Item2;

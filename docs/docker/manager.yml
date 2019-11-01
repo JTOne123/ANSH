@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
   portainer:
-    image: portainer/portainer:latest
+    image: portainer/portainer:1.22.1
     ports:
       - target: 9000
         published: 9000
@@ -24,27 +24,32 @@ services:
         max-file: "10"
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: any
       update_config:
         parallelism: 1
         delay: 1s
-      placement:
-        constraints: 
-          - node.labels.swarm.cluster == leader
 
-  registry:
-    image: registry:latest
+  repository:
+    image: sonatype/nexus3:3.19.1
     ports:
-      - target: 5000
-        published: 5000
+      - target: 8081
+        published: 8081
+        protocol: tcp
+        mode: host
+      - target: 8082
+        published: 8082
+        protocol: tcp
+        mode: host
+      - target: 18082
+        published: 18082
         protocol: tcp
         mode: host
     networks: 
       swarms:
         aliases:
-          - registry
+          - repository
     volumes:
-      - registry:/var/lib/registry
+      - repository:/nexus-data
       - /etc/localtime:/etc/localtime:ro
     logging:
       driver: "json-file"
@@ -53,7 +58,7 @@ services:
         max-file: "10"
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: any
       update_config:
         parallelism: 1
         delay: 1s
@@ -69,5 +74,5 @@ networks:
 volumes:
   portainer:
     external: true 
-  registry:
-    external: true 
+  repository: 
+    external: true

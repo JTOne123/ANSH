@@ -6,11 +6,13 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using ANSH.Common.Enums;
 using ANSH.Common.HTTP;
 using ANSH.SDK.API.RequestContracts;
 using ANSH.SDK.API.RequestContracts.Models;
 using ANSH.SDK.API.ResponseContracts;
 using ANSH.SDK.API.ResponseContracts.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ANSH.SDK.API {
 
@@ -37,22 +39,22 @@ namespace ANSH.SDK.API {
         /// <returns>api请求完整地址</returns>
         protected virtual Uri CreatePOSTUrl (string apiName, string apiVersion, string accessToken) => new Uri ($"{APIDoman?.TrimEnd('/')}/{apiName?.TrimEnd('/')}/?apiVersion={apiVersion}&access_token={accessToken}");
 
-        /// <summary>
-        /// 创建GET请求URL参数
-        /// </summary>
-        /// <param name="request">api请求参数</param>
-        /// <param name="apiDoman">api域名地址</param>
-        /// <param name="accessToken">令牌值</param>
-        /// <returns>api请求完整地址</returns>
-        protected virtual string CreateGETParameter<ANSHTResponse, ANSHTModelResponse> (ANSHGetRequestBase<ANSHTResponse, ANSHTModelResponse> request, string apiDoman, string accessToken)
-        where ANSHTResponse : ANSHGetResponseBase<ANSHTModelResponse>
-            where ANSHTModelResponse : class {
-                List<string> parameters = new List<string> ();
-                foreach (var item_parameters in request.GetParameters ()) {
-                    parameters.Add ($"{item_parameters.Key}={item_parameters.Value}");
-                }
-                return string.Join ("&", parameters.ToArray ());
-            }
+        // /// <summary>
+        // /// 创建GET请求URL参数
+        // /// </summary>
+        // /// <param name="request">api请求参数</param>
+        // /// <param name="apiDoman">api域名地址</param>
+        // /// <param name="accessToken">令牌值</param>
+        // /// <returns>api请求完整地址</returns>
+        // protected virtual string CreateGETParameter<ANSHTResponse, ANSHTModelResponse> (ANSHGetRequestBase<ANSHTResponse, ANSHTModelResponse> request, string apiDoman, string accessToken)
+        // where ANSHTResponse : ANSHGetResponseBase<ANSHTModelResponse>
+        //     where ANSHTModelResponse : class {
+        //         List<string> parameters = new List<string> ();
+        //         foreach (var item_parameters in request.GetParameters ()) {
+        //             parameters.Add ($"{item_parameters.Key}={item_parameters.Value}");
+        //         }
+        //         return string.Join ("&", parameters.ToArray ());
+        //     }
 
         /// <summary>
         /// 创建POST请求Body参数
@@ -174,26 +176,84 @@ namespace ANSH.SDK.API {
         /// <summary>
         /// 执行GET请求
         /// </summary>
+        /// <typeparam name="ANSHQueryRequest">查询参数</typeparam>
         /// <typeparam name="ANSHTResponse">响应</typeparam>
         /// <typeparam name="TModelResponse">响应模型</typeparam>
         /// <param name="request">请求参数</param>
         /// <param name="accessToken">令牌值</param>
         /// <returns>响应参数</returns>
-        public async Task<ANSHTResponse> ExecuteAsync<ANSHTResponse, TModelResponse> (ANSHGetRequestBase<ANSHTResponse, TModelResponse> request, string accessToken = null)
+        public async Task<ANSHTResponse> ExecuteAsync<ANSHQueryRequest, ANSHTResponse, TModelResponse> (ANSHGetRequestBase<ANSHQueryRequest, ANSHTResponse, TModelResponse> request, string accessToken = null)
         where ANSHTResponse : ANSHGetResponseBase<TModelResponse>
-            where TModelResponse : class {
-                var _accessToken = accessToken??AccessToken;
-                Uri base_uri = CreateGETUrl (request.APIName, request.APIVersion, _accessToken);
-                var get_url = new Uri ($"{base_uri.AbsoluteUri.TrimEnd('/','\\')}{(string.IsNullOrWhiteSpace (base_uri?.Query) ? "?" : "&")}{ this.CreateGETParameter(request,this.APIDoman,accessToken)}");
+            where TModelResponse : class
+        where ANSHQueryRequest : ANSHGetRequestModelBase {
+            var _accessToken = accessToken??AccessToken;
+            Uri base_uri = CreateGETUrl (request.APIName, request.APIVersion, _accessToken);
 
-                var httpmsg_response = await HTTPClient.GetAsync (get_url);
-                string response = await httpmsg_response.Content.ReadAsStringAsync ();
-                try {
-                    return response.ToJsonObj<ANSHTResponse> ();
-                } catch (Newtonsoft.Json.JsonReaderException) {
-                    throw new Newtonsoft.Json.JsonReaderException ($"未识别的JSON字符串：{response}");
+            string typeOfQueryPrefix = string.Empty;
+            var queryProperties = request.GetType ().GetProperty (nameof (request.Query));
+
+            if (queryProperties.IsDefined (typeof (FromQueryAttribute))) {
+                typeOfQueryPrefix = ((FromQueryAttribute) queryProperties.GetCustomAttribute (typeof (FromQueryAttribute))).Name;
+            } else {
+                typeOfQueryPrefix = queryProperties.Name;
+            }
+
+            var typeOfQuery = request.Query.GetType ();
+            var propertiesOfQuery = typeOfQuery.GetProperties ();
+            List<string> parametersOfQuery = new List<string> ();
+            if (propertiesOfQuery?.Length > 0) {
+                foreach (var propertiesOfQueryItem in propertiesOfQuery) {
+                    if (propertiesOfQueryItem.CanRead) {
+
+                        Type propertiesOfType = Nullable.GetUnderlyingType (propertiesOfQueryItem.PropertyType) ?? propertiesOfQueryItem.PropertyType;
+
+                        if (
+                            typeof (string).IsAssignableFrom (propertiesOfType) ||
+                            typeof (int).IsAssignableFrom (propertiesOfType) ||
+                            typeof (long).IsAssignableFrom (propertiesOfType) ||
+                            typeof (decimal).IsAssignableFrom (propertiesOfType) ||
+                            typeof (double).IsAssignableFrom (propertiesOfType) ||
+                            typeof (float).IsAssignableFrom (propertiesOfType) ||
+                            typeof (Enum).IsAssignableFrom (propertiesOfType)||
+                            typeof (bool).IsAssignableFrom (propertiesOfType)
+                        ) {
+                            string propertiesOfQueryItemKey, propertiesOfQueryItemValue = string.Empty;
+                            if (propertiesOfQueryItem.IsDefined (typeof (FromQueryAttribute))) {
+                                var propertiesOfQueryAttribute = (FromQueryAttribute) propertiesOfQueryItem.GetCustomAttribute (typeof (FromQueryAttribute));
+                                propertiesOfQueryItemKey = propertiesOfQueryAttribute.Name;
+                            } else {
+                                propertiesOfQueryItemKey = propertiesOfQueryItem.Name;
+                            }
+
+                            if (typeof (Enum).IsAssignableFrom (propertiesOfType)) {
+                                if (propertiesOfQueryItem.IsDefined (typeof (ANSHCustomEnumConverAttribute))) {
+                                    var propertiesOfQueryAttribute = (ANSHCustomEnumConverAttribute) propertiesOfQueryItem.GetCustomAttribute (typeof (ANSHCustomEnumConverAttribute));
+                                    if (propertiesOfQueryAttribute.Convert == ANSHEnumConvertMethod.String) {
+                                        propertiesOfQueryItemValue = System.Enum.Parse (propertiesOfType, propertiesOfQueryItemValue)?.ToString ();
+                                    } else {
+                                        propertiesOfQueryItemValue = ((int?) System.Enum.Parse (propertiesOfType, propertiesOfQueryItemValue))?.ToString ();
+                                    }
+                                } else {
+                                    propertiesOfQueryItemValue = propertiesOfQueryItem.GetValue (request.Query, null)?.ToString () ?? string.Empty;
+                                }
+                            }
+
+                            parametersOfQuery.Add ($"{typeOfQueryPrefix}.{propertiesOfQueryItemKey}={propertiesOfQueryItemValue}");
+                        }
+                        throw new Exception ($"查询参数暂不支持该类型：{propertiesOfType.Name}。");
+                    }
                 }
             }
+            var get_url = new Uri ($"{base_uri.AbsoluteUri.TrimEnd('/','\\')}{(string.IsNullOrWhiteSpace (base_uri?.Query) ? "?" : "&")}{ string.Join ("&", parametersOfQuery.ToArray ())}");
+
+            var httpmsg_response = await HTTPClient.GetAsync (get_url);
+            string response = await httpmsg_response.Content.ReadAsStringAsync ();
+            try {
+                return response.ToJsonObj<ANSHTResponse> ();
+            } catch (Newtonsoft.Json.JsonReaderException) {
+                throw new Newtonsoft.Json.JsonReaderException ($"未识别的JSON字符串：{response}");
+            }
+        }
 
         /// <summary>
         /// 执行POST请求
@@ -230,13 +290,15 @@ namespace ANSH.SDK.API {
         /// <summary>
         /// 执行GET请求
         /// </summary>
+        /// <typeparam name="ANSHQueryRequest">查询参数</typeparam>
         /// <typeparam name="ANSHTResponse">响应</typeparam>
         /// <typeparam name="ANSHTModelResponse">响应模型</typeparam>
         /// <param name="request">请求参数</param>
         /// <param name="accessToken">令牌值</param>
         /// <returns>响应参数</returns>
-        public ANSHTResponse Execute<ANSHTResponse, ANSHTModelResponse> (ANSHGetRequestBase<ANSHTResponse, ANSHTModelResponse> request, string accessToken = null)
+        public ANSHTResponse Execute<ANSHQueryRequest, ANSHTResponse, ANSHTModelResponse> (ANSHGetRequestBase<ANSHQueryRequest, ANSHTResponse, ANSHTModelResponse> request, string accessToken = null)
         where ANSHTResponse : ANSHGetResponseBase<ANSHTModelResponse>
-            where ANSHTModelResponse : class => ExecuteAsync (request, accessToken).Result;
+            where ANSHTModelResponse : class
+        where ANSHQueryRequest : ANSHGetRequestModelBase => ExecuteAsync (request, accessToken).Result;
     }
 }

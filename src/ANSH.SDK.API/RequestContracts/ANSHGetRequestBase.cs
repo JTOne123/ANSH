@@ -11,24 +11,18 @@ namespace ANSH.SDK.API.RequestContracts {
     /// 请求
     /// <para>GET</para>
     /// </summary>
+    /// <typeparam name="ANSHQueryRequest">查询参数</typeparam>
     /// <typeparam name="ANSHTResponse">响应</typeparam>
     /// <typeparam name="ANSHTModelResponse">响应模型</typeparam>
-    public abstract class ANSHGetRequestBase<ANSHTResponse, ANSHTModelResponse> : ANSHRequestBase<ANSHTResponse>
+    public abstract class ANSHGetRequestBase<ANSHQueryRequest, ANSHTResponse, ANSHTModelResponse> : ANSHRequestBase<ANSHTResponse>
         where ANSHTResponse : ANSHGetResponseBase<ANSHTModelResponse>
-        where ANSHTModelResponse : class {
+        where ANSHTModelResponse : class
+    where ANSHQueryRequest : ANSHGetRequestModelBase {
 
-            /// <summary>
-            /// 获取URL参数
-            /// </summary>
-            /// <returns>url参数集合</returns>
-            public virtual Dictionary<string, string> GetParameters () {
-                return SetParameters ();
-            }
-
-            /// <summary>
-            /// 设置URL参数
-            /// </summary>
-            /// <returns>url参数集合</returns>
-            public abstract Dictionary<string, string> SetParameters ();
-        }
+        /// <summary>
+        /// 查询参数
+        /// </summary>
+        /// <value></value>
+        public ANSHQueryRequest Query { get; set; }
+    }
 }
