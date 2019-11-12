@@ -60,7 +60,7 @@ namespace ANSH.MQ.RabbitMQ {
         }
 
         /// <summary>
-        /// 常见交换机
+        /// 创建交换机
         /// </summary>
         /// <param name="exchange">交换机名称</param>
         /// <param name="exchange_type">交换机类型</param>
@@ -83,11 +83,10 @@ namespace ANSH.MQ.RabbitMQ {
         /// <param name="bind_args">队列绑定参数</param>
         public void CreateQueue (string queue, bool delivery, bool auto_delete, string exchange, string root_key = "", Dictionary<string, object> bind_args = null) {
             using (var channel = IConnection.CreateModel ()) {
-                channel.QueueDeclare (queue, delivery, false, auto_delete, null);
+                channel.QueueDeclare (queue, delivery, false, auto_delete, bind_args);
                 channel.QueueBind (queue: queue,
                     exchange: string.IsNullOrWhiteSpace (exchange) ? "amq.direct" : exchange,
-                    routingKey : root_key,
-                    arguments : bind_args);
+                    routingKey : root_key);
             }
         }
 
@@ -280,10 +279,16 @@ namespace ANSH.MQ.RabbitMQ {
         public virtual void RetrievingMessages (string queue, Func<string, bool> received, bool requeue, ushort prefetchCount, CancellationToken cancellationToken = default (CancellationToken)) {
             var ItemCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource (cancellationToken);
             Task.Run (() => {
-                using (var channel = IConnection.CreateModel ()) {
-                    RetrievingMessagesTask (channel, queue, received, requeue, prefetchCount);
-                    ItemCancellationTokenSource.Token.WaitHandle.WaitOne ();
-                }
+                do {
+                    try {
+                        using (var channel = IConnection.CreateModel ()) {
+                            RetrievingMessagesTask (channel, queue, received, requeue, prefetchCount);
+                            ItemCancellationTokenSource.Token.WaitHandle.WaitOne ();
+                        }
+                    } catch {
+
+                    }
+                } while (true);
             }, ItemCancellationTokenSource.Token);
         }
 
@@ -317,10 +322,16 @@ namespace ANSH.MQ.RabbitMQ {
         public virtual void RetrievingMessages (string queue, Func < string, (bool, bool) > received, ushort prefetchCount, CancellationToken cancellationToken = default (CancellationToken)) {
             var ItemCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource (cancellationToken);
             Task.Run (() => {
-                using (var model = IConnection.CreateModel ()) {
-                    RetrievingMessagesTask (model, queue, received, prefetchCount);
-                    ItemCancellationTokenSource.Token.WaitHandle.WaitOne ();
-                }
+                do {
+                    try {
+                        using (var model = IConnection.CreateModel ()) {
+                            RetrievingMessagesTask (model, queue, received, prefetchCount);
+                            ItemCancellationTokenSource.Token.WaitHandle.WaitOne ();
+                        }
+                    } catch {
+
+                    }
+                } while (true);
             }, ItemCancellationTokenSource.Token);
         }
 
