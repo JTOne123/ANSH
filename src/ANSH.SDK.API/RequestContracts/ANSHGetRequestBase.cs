@@ -8,21 +8,20 @@ using ANSH.SDK.API.ResponseContracts;
 namespace ANSH.SDK.API.RequestContracts {
 
     /// <summary>
-    /// 请求
-    /// <para>GET</para>
+    /// Get请求单条记录基类
     /// </summary>
-    /// <typeparam name="ANSHQueryRequest">查询参数</typeparam>
-    /// <typeparam name="ANSHTResponse">响应</typeparam>
-    /// <typeparam name="ANSHTModelResponse">响应模型</typeparam>
-    public abstract class ANSHGetRequestBase<ANSHQueryRequest, ANSHTResponse, ANSHTModelResponse> : ANSHRequestBase<ANSHTResponse>
-        where ANSHTResponse : ANSHGetResponseBase<ANSHTModelResponse>
-        where ANSHTModelResponse : class
-    where ANSHQueryRequest : ANSHGetRequestModelBase {
+    /// <typeparam name="TANSHQueryRequest">Get请求查询模型基类</typeparam>
+    /// <typeparam name="TANSHGetResponse">Get响应单条记录基类</typeparam>
+    /// <typeparam name="TANSHModelResponse">响应模型基类</typeparam>
+    public abstract class ANSHGetRequestBase<TANSHQueryRequest, TANSHGetResponse, TANSHModelResponse> : ANSHRequestBase<TANSHGetResponse>
+        where TANSHGetResponse : ANSHGetResponseBase<TANSHModelResponse>
+        where TANSHModelResponse : class
+    where TANSHQueryRequest : ANSHGetRequestModelBase {
 
         /// <summary>
-        /// 查询参数
+        /// 查询模型
         /// </summary>
         /// <value></value>
-        public ANSHQueryRequest Query { get; set; }
+        public TANSHQueryRequest Query { get; set; }
     }
 }

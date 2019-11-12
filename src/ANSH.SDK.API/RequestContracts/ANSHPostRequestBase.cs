@@ -10,18 +10,18 @@ namespace ANSH.SDK.API.RequestContracts {
     /// <summary>
     /// 请求
     /// </summary>
-    /// <typeparam name="ANSHTResponse">响应</typeparam>
-    /// <typeparam name="ANSHTMODELRequest">请求模型</typeparam>
-    /// <typeparam name="ANSHTModelResponse">响应模型</typeparam>
-    public abstract class ANSHPostRequestBase<ANSHTResponse, ANSHTMODELRequest, ANSHTModelResponse> : ANSHRequestBase<ANSHTResponse>
-        where ANSHTResponse : ANSHPostResponseBase<ANSHTModelResponse>
-        where ANSHTMODELRequest : ANSHPostRequestModelBase
-    where ANSHTModelResponse : class {
+    /// <typeparam name="TANSHTResponse">响应</typeparam>
+    /// <typeparam name="TANSHMODELRequest">请求模型</typeparam>
+    /// <typeparam name="TANSHModelResponse">响应模型</typeparam>
+    public abstract class ANSHPostRequestBase<TANSHTResponse, TANSHMODELRequest, TANSHModelResponse> : ANSHRequestBase<TANSHTResponse>
+        where TANSHTResponse : ANSHPostResponseBase<TANSHModelResponse>
+        where TANSHMODELRequest : ANSHPostRequestModelBase
+    where TANSHModelResponse : class {
 
         /// <summary>
         /// 提交内容
         /// </summary>
-        public virtual ANSHTMODELRequest PostItem {
+        public virtual TANSHMODELRequest PostItem {
             get;
             set;
         }

@@ -11,18 +11,18 @@ namespace ANSH.SDK.API.RequestContracts {
     /// 请求
     /// <para>数组POST</para>
     /// </summary>
-    /// <typeparam name="ANSHTResponse">响应</typeparam>
-    /// <typeparam name="ANSHTMODELRequest">请求模型</typeparam>
-    /// <typeparam name="ANSHTModelResponse">响应模型</typeparam>
-    public abstract class ANSHPostArrayRequestBase<ANSHTResponse, ANSHTMODELRequest, ANSHTModelResponse> : ANSHRequestBase<ANSHTResponse>
-        where ANSHTResponse : ANSHPostArrayResponseBase<ANSHTModelResponse>
-        where ANSHTMODELRequest : ANSHPostRequestModelBase
-    where ANSHTModelResponse : ANSHPostArrayResponseModelBase {
+    /// <typeparam name="TANSHResponse">响应</typeparam>
+    /// <typeparam name="TANSHMODELRequest">请求模型</typeparam>
+    /// <typeparam name="TANSHModelResponse">响应模型</typeparam>
+    public abstract class ANSHPostArrayRequestBase<TANSHResponse, TANSHMODELRequest, TANSHModelResponse> : ANSHRequestBase<TANSHResponse>
+        where TANSHResponse : ANSHPostArrayResponseBase<TANSHModelResponse>
+        where TANSHMODELRequest : ANSHPostRequestModelBase
+    where TANSHModelResponse : ANSHPostArrayResponseModelBase {
 
         /// <summary>
         /// 数组
         /// </summary>
-        public virtual List<ANSHTMODELRequest> PostList {
+        public virtual List<TANSHMODELRequest> PostList {
             get;
             set;
         }

@@ -1,7 +1,7 @@
 using System;
 namespace ANSH.SDK.API.RequestContracts.Models {
     /// <summary>
-    /// Get请求参数基类
+    /// Get请求查询模型基类
     /// </summary>
     public abstract class ANSHGetRequestModelBase {
         /// <summary>

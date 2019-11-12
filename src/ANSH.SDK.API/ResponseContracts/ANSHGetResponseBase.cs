@@ -6,14 +6,14 @@ using System.Xml.Serialization;
 
 namespace ANSH.SDK.API.ResponseContracts {
     /// <summary>
-    /// 响应
+    /// Get响应单条记录基类
     /// </summary>
-    /// <typeparam name="ANSHTModelResponse">响应模型</typeparam>
-    public abstract class ANSHGetResponseBase<ANSHTModelResponse> : ANSHResponseBase where ANSHTModelResponse : class {
+    /// <typeparam name="TANSHModelResponse">响应模型基类</typeparam>
+    public abstract class ANSHGetResponseBase<TANSHModelResponse> : ANSHResponseBase where TANSHModelResponse : class {
 
         /// <summary>
-        /// 返回信息
+        /// 响应模型
         /// </summary>
-        public virtual ANSHTModelResponse ResultItem { get; set; }
+        public virtual TANSHModelResponse ResultItem { get; set; }
     }
 }

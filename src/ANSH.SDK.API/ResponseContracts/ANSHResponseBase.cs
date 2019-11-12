@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml.Serialization;
 namespace ANSH.SDK.API.ResponseContracts {
     /// <summary>
-    /// 响应
+    /// 响应基类
     /// </summary>
     public abstract class ANSHResponseBase {
         int _MsgCode = 0;

@@ -136,7 +136,7 @@ namespace ANSH.MQ.RabbitMQ {
         /// <param name="death_exchange">死信交换机名称</param>
         /// <param name="death_routkey">死信交换机routkey</param>
         /// <returns>死信交换机参数</returns>
-        private Dictionary<string, object> CreateParamFormDeathType (string death_exchange, string death_routkey = "") {
+        public Dictionary<string, object> CreateParamFormDeathType (string death_exchange, string death_routkey = "") {
             Dictionary<String, Object> args = new Dictionary<string, object> ();
             if (!string.IsNullOrWhiteSpace (death_exchange)) {
                 args.Add ("x-dead-letter-exchange", death_exchange);
