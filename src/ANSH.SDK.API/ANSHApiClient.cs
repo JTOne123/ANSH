@@ -214,7 +214,7 @@ namespace ANSH.SDK.API {
                             typeof (decimal).IsAssignableFrom (propertiesOfType) ||
                             typeof (double).IsAssignableFrom (propertiesOfType) ||
                             typeof (float).IsAssignableFrom (propertiesOfType) ||
-                            typeof (Enum).IsAssignableFrom (propertiesOfType)||
+                            typeof (Enum).IsAssignableFrom (propertiesOfType) ||
                             typeof (bool).IsAssignableFrom (propertiesOfType)
                         ) {
                             string propertiesOfQueryItemKey, propertiesOfQueryItemValue = string.Empty;
@@ -239,8 +239,9 @@ namespace ANSH.SDK.API {
                             }
 
                             parametersOfQuery.Add ($"{typeOfQueryPrefix}.{propertiesOfQueryItemKey}={propertiesOfQueryItemValue}");
+                        } else {
+                            throw new Exception ($"查询参数暂不支持该类型：{propertiesOfType.Name}。");
                         }
-                        throw new Exception ($"查询参数暂不支持该类型：{propertiesOfType.Name}。");
                     }
                 }
             }
