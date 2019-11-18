@@ -24,7 +24,7 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
         /// <summary>
         /// 创建DbContext集合
         /// </summary>
-        List<DbContext> _DbContext = new List<DbContext> ();
+        List<ANSHDbContextBase> _ANSHDbContextBase = new List<ANSHDbContextBase> ();
 
         /// <summary>
         /// 创建对应的访问层对象
@@ -45,7 +45,7 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
         /// </summary>
         /// <param name="db"></param>
         void AddDbContext (ANSHDbContextBase db) {
-            _DbContext.Add (db);
+            _ANSHDbContextBase.Add (db);
         }
 
         /// <summary>
@@ -53,8 +53,8 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
         /// </summary>
         public override void Dispose () {
             base.Dispose ();
-            _DbContext?.ForEach (m => m.Dispose ());
-            _DbContext?.Clear ();
+            _ANSHDbContextBase?.ForEach (m => m.Dispose ());
+            _ANSHDbContextBase?.Clear ();
         }
 
         /// <summary>
@@ -78,6 +78,7 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
                 ++BeginTransactionCount.Value;
                 TransactionDBConnectionThreadLocal.Value = TransactionDBConnectionThreadLocal.Value??CreateDBConnection ();
                 TransactionDBConnectionThreadLocal.Value.BeginTransaction (isolationLevel);
+                _ANSHDbContextBase?.ForEach (m => m.UserTransaction (TransactionDBConnectionThreadLocal.Value.DbTransaction));
                 IsBeginTransactionThreadLocal.Value = true;
                 Method ();
                 TransactionDBConnectionThreadLocal.Value.Commit ();
@@ -98,6 +99,8 @@ namespace ANSH.DataBase.IUnitOfWorks.EFCore {
             TransactionDBConnectionThreadLocal.Value = null;
             IsBeginTransactionThreadLocal.Value = false;
             BeginTransactionCount.Value = 0;
+            _ANSHDbContextBase?.ForEach (m => m.Dispose ());
+            _ANSHDbContextBase?.Clear ();
         }
 
         /// <summary>
