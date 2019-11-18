@@ -57,7 +57,7 @@ namespace ANSH.DataBase.EFCore {
         /// </summary>
         /// <typeparam name="TResult">对应的BLL层对象</typeparam>
         /// <returns>返回对应的BLL层对象</returns>
-        public virtual TResult Set<TResult> ()
+        public virtual TResult Register<TResult> ()
         where TResult : ANSHDbContextBase, new () {
             var result = new TResult ();
             result.UseConnection (_ANSHDbConnection, _loggerFactory);
@@ -71,7 +71,7 @@ namespace ANSH.DataBase.EFCore {
         /// </summary>
         /// <typeparam name="TResult">对应的BLL层对象</typeparam>
         /// <returns>返回对应的BLL层对象</returns>
-        public virtual TResult SetScope<TResult> ()
+        public virtual TResult RegisterScope<TResult> ()
         where TResult : ANSHDbContextBase, new () {
             var result = new TResult ();
             result.UseConnection (_ANSHDbConnection, _loggerFactory);
